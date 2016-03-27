@@ -24,6 +24,7 @@ import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.net.Uri;
@@ -36,8 +37,14 @@ import android.support.wearable.watchface.CanvasWatchFaceService;
 import android.support.wearable.watchface.WatchFaceStyle;
 import android.text.format.Time;
 import android.util.Log;
+import android.view.Display;
+import android.view.LayoutInflater;
 import android.view.SurfaceHolder;
+import android.view.View;
 import android.view.WindowInsets;
+import android.view.WindowManager;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -104,16 +111,17 @@ public class MyWatchFace extends CanvasWatchFaceService {
     private class Engine extends CanvasWatchFaceService.Engine implements DataApi.DataListener,
             GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener{
         final Handler mUpdateTimeHandler = new EngineHandler(this);
+
         boolean mRegisteredTimeZoneReceiver = false;
-        Paint mBackgroundPaint;
-        Paint mTimeTextPaint;
-        Paint mTemperatureTextPaint;
         boolean mAmbient;
+
         Time mTime;
         Integer highTemp;
         Integer lowTemp;
         Integer weatherImage;
+
         private GoogleApiClient mGoogleApiClient;
+
         final BroadcastReceiver mTimeZoneReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
@@ -121,9 +129,15 @@ public class MyWatchFace extends CanvasWatchFaceService {
                 mTime.setToNow();
             }
         };
-        float mXOffset;
-        float mYOffset;
 
+        float mXOffset, mYOffset;
+        private int specW, specH;
+
+        private View watchFaceLayout;
+        private TextView hoursMins, minTemp, maxTemp;
+        private ImageView tinyWeatherImage;
+
+        private final Point displaySize = new Point();
         /**
          * Whether the display supports fewer bits for each color in ambient mode. When true, we
          * disable anti-aliasing in ambient mode.
@@ -134,33 +148,57 @@ public class MyWatchFace extends CanvasWatchFaceService {
         public void onCreate(SurfaceHolder holder) {
             super.onCreate(holder);
 
-            mGoogleApiClient = new GoogleApiClient.Builder(getApplicationContext())
-                    .addConnectionCallbacks(this)
-                    .addOnConnectionFailedListener(this)
-                    .addApi(Wearable.API)
-                    .build();
+            // Initialize Watch Face
 
-            Log.d(LOG_TAG, "GoogleApiClient attempting to connected.");
-            mGoogleApiClient.connect();
-            Log.d(LOG_TAG, "GoogleApiClient is it connected?");
             setWatchFaceStyle(new WatchFaceStyle.Builder(MyWatchFace.this)
                     .setCardPeekMode(WatchFaceStyle.PEEK_MODE_VARIABLE)
                     .setBackgroundVisibility(WatchFaceStyle.BACKGROUND_VISIBILITY_INTERRUPTIVE)
                     .setShowSystemUiTime(false)
                     .build());
             Resources resources = MyWatchFace.this.getResources();
+            mTime = new Time();
+
+            //  Connect to the Google API client for Weather data.
+
+            mGoogleApiClient = new GoogleApiClient.Builder(getApplicationContext())
+                    .addConnectionCallbacks(this)
+                    .addOnConnectionFailedListener(this)
+                    .addApi(Wearable.API)
+                    .build();
+
+            mGoogleApiClient.connect();
+
+            //  Inflate the Watch Face XML
+
+            LayoutInflater inflater =
+                    (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+
+            watchFaceLayout = inflater.inflate(R.layout.watch_face_round, null);
+
+            //  Setup display measurements
+
+            Display display = ((WindowManager) getSystemService(Context.WINDOW_SERVICE))
+                    .getDefaultDisplay();
+            display.getSize(displaySize);
+
+            specW = View.MeasureSpec.makeMeasureSpec(displaySize.x,
+                    View.MeasureSpec.EXACTLY);
+            specH = View.MeasureSpec.makeMeasureSpec(displaySize.y,
+                    View.MeasureSpec.EXACTLY);
+
+            //  Bind our Views
+
+            hoursMins = (TextView) watchFaceLayout.findViewById(R.id.hoursMinutes);
+            minTemp = (TextView) watchFaceLayout.findViewById(R.id.minTemp);
+            maxTemp = (TextView) watchFaceLayout.findViewById(R.id.maxTemp);
+            tinyWeatherImage = (ImageView) watchFaceLayout.findViewById(R.id.tinyWeatherImage);
+
+
+            //  TODO figure out if we need this (answer looks like no).
+
             mYOffset = resources.getDimension(R.dimen.digital_y_offset);
 
-            mBackgroundPaint = new Paint();
-            mBackgroundPaint.setColor(resources.getColor(R.color.background));
 
-            mTimeTextPaint = new Paint();
-            mTimeTextPaint = createTextPaint(resources.getColor(R.color.digital_text));
-
-            mTemperatureTextPaint = new Paint();
-            mTemperatureTextPaint = createTextPaint(resources.getColor(R.color.digital_text));
-
-            mTime = new Time();
         }
 
         @Override
@@ -170,6 +208,8 @@ public class MyWatchFace extends CanvasWatchFaceService {
             super.onDestroy();
         }
 
+
+        //  Take care of the data updates
         @Override
         public void onConnected(Bundle bundle) {
             Wearable.DataApi.addListener(mGoogleApiClient, this);
@@ -193,6 +233,8 @@ public class MyWatchFace extends CanvasWatchFaceService {
             }
             dataEventBuffer.release();
         }
+
+
 
         public void setupTemperature(DataItem data){
 
@@ -219,14 +261,6 @@ public class MyWatchFace extends CanvasWatchFaceService {
             if (mGoogleApiClient != null && mGoogleApiClient.isConnected()) {
                 mGoogleApiClient.disconnect();
             }
-        }
-
-        private Paint createTextPaint(int textColor) {
-            Paint paint = new Paint();
-            paint.setColor(textColor);
-            paint.setTypeface(NORMAL_TYPEFACE);
-            paint.setAntiAlias(true);
-            return paint;
         }
 
         @Override
@@ -280,8 +314,6 @@ public class MyWatchFace extends CanvasWatchFaceService {
             float tempTextSize = resources.getDimension(isRound
                     ? R.dimen.digital_temp_text_size_round: R.dimen.digital_temp_text_size);
 
-            mTimeTextPaint.setTextSize(textSize);
-            mTemperatureTextPaint.setTextSize(tempTextSize);
         }
 
         @Override
@@ -302,8 +334,6 @@ public class MyWatchFace extends CanvasWatchFaceService {
             if (mAmbient != inAmbientMode) {
                 mAmbient = inAmbientMode;
                 if (mLowBitAmbient) {
-                    mTimeTextPaint.setAntiAlias(!inAmbientMode);
-                    mTemperatureTextPaint.setAntiAlias(!inAmbientMode);
                 }
                 invalidate();
             }
@@ -315,39 +345,35 @@ public class MyWatchFace extends CanvasWatchFaceService {
 
         @Override
         public void onDraw(Canvas canvas, Rect bounds) {
-            // Draw the background.
-            if (isInAmbientMode()) {
-                canvas.drawColor(Color.BLACK);
-            } else {
-                canvas.drawRect(0, 0, bounds.width(), bounds.height(), mBackgroundPaint);
-            }
 
-            // Draw H:MM in ambient mode or H:MM:SS in interactive mode.
+            // Set the time
             mTime.setToNow();
-            String text = mAmbient
-                    ? String.format("%d:%02d", mTime.hour, mTime.minute)
-                    : String.format("%d:%02d", mTime.hour, mTime.minute);
-            canvas.drawText(text, mXOffset, mYOffset, mTimeTextPaint);
 
-            Log.d(LOG_TAG, "onDraw: low Temp stuff " + lowTemp);
+            //  Set the watch time
 
-            if(lowTemp != null){
-                canvas.drawText(Integer.toString(lowTemp), mXOffset, mYOffset + 40, mTemperatureTextPaint);
-            } else {
-                canvas.drawText("Nope", mXOffset, mYOffset + 40, mTemperatureTextPaint);
+            String currentTime = String.format("%02d", mTime.hour)
+                    + ":" + String.format("%02d", mTime.minute);
+            hoursMins.setText(currentTime);
+
+            if(lowTemp != null) {
+                minTemp.setText(lowTemp);
             }
-
             if(highTemp != null){
-                canvas.drawText(Integer.toString(highTemp), mXOffset + 20, mYOffset + 40, mTemperatureTextPaint);
+                maxTemp.setText(highTemp);
             }
-
             if(weatherImage != null){
-                canvas.drawText(Integer.toString(weatherImage), mXOffset, mYOffset + 80, mTemperatureTextPaint);
+//                tinyWeatherImage.setImageDrawable();
             }
 
-//            String weatherText = "It's weather";
-//            canvas.drawText(weatherText, mXOffset, mYOffset + 45, mTemperatureTextPaint);
+            watchFaceLayout.measure(specW, specH);
+            watchFaceLayout.layout(0, 0, watchFaceLayout.getMeasuredWidth(),
+                    watchFaceLayout.getMeasuredHeight());
+
+            canvas.drawColor(Color.BLACK);
+            watchFaceLayout.draw(canvas);
+
         }
+
 
         /**
          * Starts the {@link #mUpdateTimeHandler} timer if it should be running and isn't currently
