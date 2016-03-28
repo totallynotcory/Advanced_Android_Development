@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/watchFaceLayout">
 
     <TextView
         android:layout_width="match_parent"
@@ -14,7 +17,7 @@
         android:layout_centerInParent="true"
         android:gravity="center_horizontal"
         android:textIsSelectable="true"
-        android:textSize="40sp" />
+        android:textSize="80sp" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -24,7 +27,7 @@
         android:text="00"
         android:layout_below="@+id/hoursMinutes"
         android:gravity="center_horizontal"
-        android:textSize="16sp" />
+        android:textSize="18sp" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -35,7 +38,7 @@
         android:layout_below="@+id/hoursMinutes"
         android:layout_alignParentEnd="true"
         android:gravity="center_horizontal"
-        android:textSize="16sp" />
+        android:textSize="18sp" />
 
     <ImageView
         android:layout_width="wrap_content"

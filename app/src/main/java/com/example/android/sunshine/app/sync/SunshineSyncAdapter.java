@@ -698,14 +698,18 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter implements
 
             if(cursor.moveToFirst()) {
                 int imageData = cursor.getInt(INDEX_WEATHER_ID);
-                int highData = (int) cursor.getDouble(INDEX_MAX_TEMP);
-                int lowData = (int) cursor.getDouble(INDEX_MIN_TEMP);
+                double highData = cursor.getDouble(INDEX_MAX_TEMP);
+                double lowData = cursor.getDouble(INDEX_MIN_TEMP);
+
+                String highTemp = Utility.formatTemperature(context, highData);
+                String lowTemp = Utility.formatTemperature(context, lowData);
+
                 PutDataMapRequest putDataMapReq = PutDataMapRequest.create("/weather_for_watch");
                 putDataMapReq.getDataMap().putLong("time", new Date().getTime());
-                putDataMapReq.getDataMap().putInt(TEMPHIGH_KEY, highData);
-                putDataMapReq.getDataMap().putInt(TEMPLOW_KEY, lowData);
+                putDataMapReq.getDataMap().putString(TEMPHIGH_KEY, highTemp);
+                putDataMapReq.getDataMap().putString(TEMPLOW_KEY, lowTemp);
                 putDataMapReq.getDataMap().putInt(IMAGE_KEY, imageData);
-                PutDataRequest putDataReq = putDataMapReq.asPutDataRequest();
+                PutDataRequest putDataReq = putDataMapReq.asPutDataRequest().setUrgent();
                 Wearable.DataApi.putDataItem(mGoogleApiClient, putDataReq);
                 Log.d(LOG_TAG, "putRequestToWatchface: this is data of high " + highData + "and low " + lowData);
             }

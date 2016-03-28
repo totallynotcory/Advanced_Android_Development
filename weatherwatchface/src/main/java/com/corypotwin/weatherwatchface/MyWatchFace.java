@@ -44,6 +44,7 @@ import android.view.View;
 import android.view.WindowInsets;
 import android.view.WindowManager;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -116,11 +117,13 @@ public class MyWatchFace extends CanvasWatchFaceService {
         boolean mAmbient;
 
         Time mTime;
-        Integer highTemp;
-        Integer lowTemp;
+        String highTemp, lowTemp;
         Integer weatherImage;
 
         private GoogleApiClient mGoogleApiClient;
+        final String TEMPHIGH_KEY = "high_temperature";
+        final String TEMPLOW_KEY = "low_temperature";
+        final String IMAGE_KEY = "image_of_weather";
 
         final BroadcastReceiver mTimeZoneReceiver = new BroadcastReceiver() {
             @Override
@@ -130,10 +133,10 @@ public class MyWatchFace extends CanvasWatchFaceService {
             }
         };
 
-        float mXOffset, mYOffset;
         private int specW, specH;
 
         private View watchFaceLayout;
+        private RelativeLayout watchFaceRelLayout;
         private TextView hoursMins, minTemp, maxTemp;
         private ImageView tinyWeatherImage;
 
@@ -188,17 +191,11 @@ public class MyWatchFace extends CanvasWatchFaceService {
 
             //  Bind our Views
 
+            watchFaceRelLayout = (RelativeLayout) watchFaceLayout.findViewById(R.id.watchFaceLayout);
             hoursMins = (TextView) watchFaceLayout.findViewById(R.id.hoursMinutes);
             minTemp = (TextView) watchFaceLayout.findViewById(R.id.minTemp);
             maxTemp = (TextView) watchFaceLayout.findViewById(R.id.maxTemp);
             tinyWeatherImage = (ImageView) watchFaceLayout.findViewById(R.id.tinyWeatherImage);
-
-
-            //  TODO figure out if we need this (answer looks like no).
-
-            mYOffset = resources.getDimension(R.dimen.digital_y_offset);
-
-
         }
 
         @Override
@@ -238,14 +235,10 @@ public class MyWatchFace extends CanvasWatchFaceService {
 
         public void setupTemperature(DataItem data){
 
-            final String TEMPHIGH_KEY = "high_temperature";
-            final String TEMPLOW_KEY = "low_temperature";
-            final String IMAGE_KEY = "image_of_weather";
-
             if ("/weather_for_watch".equals(data.getUri().getPath())) {
                 DataMap dataMap = DataMapItem.fromDataItem(data).getDataMap();
-                lowTemp = dataMap.getInt(TEMPLOW_KEY);
-                highTemp = dataMap.getInt(TEMPHIGH_KEY);
+                lowTemp = dataMap.getString(TEMPLOW_KEY);
+                highTemp = dataMap.getString(TEMPHIGH_KEY);
                 weatherImage = dataMap.getInt(IMAGE_KEY);
                 Log.d(LOG_TAG, "setupTemperature: it's gotten " + lowTemp);
             }
@@ -270,10 +263,12 @@ public class MyWatchFace extends CanvasWatchFaceService {
             if (visible) {
                 mGoogleApiClient.connect();
                 registerReceiver();
+
                 // Update time zone in case it changed while we weren't visible.
                 mTime.clear(TimeZone.getDefault().getID());
                 mTime.setToNow();
             } else {
+
                 releaseGoogleApiClient();
                 unregisterReceiver();
             }
@@ -303,16 +298,6 @@ public class MyWatchFace extends CanvasWatchFaceService {
         @Override
         public void onApplyWindowInsets(WindowInsets insets) {
             super.onApplyWindowInsets(insets);
-
-            // Load resources that have alternate values for round watches.
-            Resources resources = MyWatchFace.this.getResources();
-            boolean isRound = insets.isRound();
-            mXOffset = resources.getDimension(isRound
-                    ? R.dimen.digital_x_offset_round : R.dimen.digital_x_offset);
-            float textSize = resources.getDimension(isRound
-                    ? R.dimen.digital_text_size_round : R.dimen.digital_text_size);
-            float tempTextSize = resources.getDimension(isRound
-                    ? R.dimen.digital_temp_text_size_round: R.dimen.digital_temp_text_size);
 
         }
 
@@ -356,6 +341,7 @@ public class MyWatchFace extends CanvasWatchFaceService {
             hoursMins.setText(currentTime);
 
             if(lowTemp != null) {
+                Log.d(LOG_TAG, "onDraw: this is the low temp: " + lowTemp);
                 minTemp.setText(lowTemp);
             }
             if(highTemp != null){
@@ -363,6 +349,12 @@ public class MyWatchFace extends CanvasWatchFaceService {
             }
             if(weatherImage != null){
 //                tinyWeatherImage.setImageDrawable();
+            }
+
+            if(mAmbient){
+                watchFaceRelLayout.setBackgroundColor(getResources().getColor(R.color.black));
+            } else{
+                watchFaceRelLayout.setBackgroundColor(getResources().getColor(R.color.blue));
             }
 
             watchFaceLayout.measure(specW, specH);
