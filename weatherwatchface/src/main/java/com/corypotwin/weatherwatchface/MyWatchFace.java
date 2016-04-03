@@ -23,17 +23,12 @@ import android.content.IntentFilter;
 import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.Typeface;
-import android.graphics.drawable.Drawable;
-import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.support.v4.content.CursorLoader;
 import android.support.wearable.watchface.CanvasWatchFaceService;
 import android.support.wearable.watchface.WatchFaceStyle;
 import android.text.format.Time;
@@ -177,7 +172,7 @@ public class MyWatchFace extends CanvasWatchFaceService {
             LayoutInflater inflater =
                     (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
-            watchFaceLayout = inflater.inflate(R.layout.watch_face_round, null);
+            watchFaceLayout = inflater.inflate(R.layout.watchface, null);
 
             //  Setup display measurements
 
@@ -348,14 +343,17 @@ public class MyWatchFace extends CanvasWatchFaceService {
             if(highTemp != null){
                 maxTemp.setText(highTemp);
             }
+
             if(weatherImage != null){
                 int imageResource = com.corypotwin.common.Utility.getIconResourceForWeatherCondition(weatherImage);
                 tinyWeatherImage.setImageResource(imageResource);
             }
 
             if(mAmbient){
+                tinyWeatherImage.setVisibility(View.INVISIBLE);
                 watchFaceRelLayout.setBackgroundColor(getResources().getColor(R.color.black));
             } else{
+                tinyWeatherImage.setVisibility(View.VISIBLE);
                 watchFaceRelLayout.setBackgroundColor(getResources().getColor(R.color.primary));
             }
 

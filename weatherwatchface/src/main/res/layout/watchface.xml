@@ -43,10 +43,10 @@
     <ImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
         android:id="@+id/tinyWeatherImage"
         android:layout_above="@+id/hoursMinutes"
         android:layout_centerInParent="true"
-        android:gravity="center_horizontal"
-        android:textSize="14sp" />
+        android:gravity="center_horizontal" />
 
 </RelativeLayout>
