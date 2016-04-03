@@ -447,7 +447,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter implements
                     double low = cursor.getDouble(INDEX_MIN_TEMP);
                     String desc = cursor.getString(INDEX_SHORT_DESC);
 
-                    int iconId = Utility.getIconResourceForWeatherCondition(weatherId);
+                    int iconId = com.corypotwin.common.Utility.getIconResourceForWeatherCondition(weatherId);
                     Resources resources = context.getResources();
                     int artResourceId = Utility.getArtResourceForWeatherCondition(weatherId);
                     String artUrl = Utility.getArtUrlForWeatherCondition(context, weatherId);
@@ -682,10 +682,10 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter implements
 
     /**** WATCHFACE RELATED FUNCTIONALITY ****/
 
-    private final String TEMPHIGH_KEY = "high_temperature";
-    private final String TEMPLOW_KEY = "low_temperature";
-    private final String IMAGE_KEY = "image_of_weather";
-
+    final String PATH_TO_WEATHER_DATA = com.corypotwin.common.Utility.getWeatherDataPath(getContext());
+    final String TEMPHIGH_KEY = com.corypotwin.common.Utility.getHighTempKey(getContext());
+    final String TEMPLOW_KEY = com.corypotwin.common.Utility.getLowTempKey(getContext());
+    final String IMAGE_KEY = com.corypotwin.common.Utility.getImageKey(getContext());
 
     private void putRequestToWatchface() {
 
@@ -704,7 +704,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter implements
                 String highTemp = Utility.formatTemperature(context, highData);
                 String lowTemp = Utility.formatTemperature(context, lowData);
 
-                PutDataMapRequest putDataMapReq = PutDataMapRequest.create("/weather_for_watch");
+                PutDataMapRequest putDataMapReq = PutDataMapRequest.create(PATH_TO_WEATHER_DATA);
                 putDataMapReq.getDataMap().putLong("time", new Date().getTime());
                 putDataMapReq.getDataMap().putString(TEMPHIGH_KEY, highTemp);
                 putDataMapReq.getDataMap().putString(TEMPLOW_KEY, lowTemp);

@@ -95,7 +95,7 @@ public class DetailWidgetRemoteViewsService extends RemoteViewsService {
                 RemoteViews views = new RemoteViews(getPackageName(),
                         R.layout.widget_detail_list_item);
                 int weatherId = data.getInt(INDEX_WEATHER_CONDITION_ID);
-                int weatherArtResourceId = Utility.getIconResourceForWeatherCondition(weatherId);
+                int weatherArtResourceId = com.corypotwin.common.Utility.getIconResourceForWeatherCondition(weatherId);
                 Bitmap weatherArtImage = null;
                 if ( !Utility.usingLocalGraphics(DetailWidgetRemoteViewsService.this) ) {
                     String weatherArtResourceUrl = Utility.getArtUrlForWeatherCondition(

@@ -24,7 +24,6 @@
         android:layout_height="wrap_content"
         android:ems="10"
         android:id="@+id/minTemp"
-        android:text="00"
         android:layout_below="@+id/hoursMinutes"
         android:gravity="center_horizontal"
         android:textSize="18sp" />
@@ -34,7 +33,6 @@
         android:layout_height="wrap_content"
         android:ems="10"
         android:id="@+id/maxTemp"
-        android:text="00"
         android:layout_below="@+id/hoursMinutes"
         android:layout_alignParentEnd="true"
         android:gravity="center_horizontal"
@@ -43,7 +41,6 @@
     <ImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
         android:id="@+id/tinyWeatherImage"
         android:layout_above="@+id/hoursMinutes"
         android:layout_centerInParent="true"

@@ -57,6 +57,23 @@ public class Utility {
             return R.drawable.ic_cloudy;
         }
         return -1;
+
+    }
+
+    public static String getHighTempKey(Context context){
+        return context.getString(R.string.high_temp_key);
+    }
+
+    public static String getLowTempKey(Context context){
+        return context.getString(R.string.low_temp_key);
+    }
+
+    public static String getImageKey(Context context){
+        return context.getString(R.string.image_key);
+    }
+
+    public static String getWeatherDataPath(Context context){
+        return context.getString(R.string.google_api_path);
     }
 
 }

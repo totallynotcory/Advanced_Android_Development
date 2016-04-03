@@ -135,7 +135,7 @@ public class ForecastAdapter extends RecyclerView.Adapter<ForecastAdapter.Foreca
                 useLongToday = true;
                 break;
             default:
-                defaultImage = Utility.getIconResourceForWeatherCondition(weatherId);
+                defaultImage = com.corypotwin.common.Utility.getIconResourceForWeatherCondition(weatherId);
                 useLongToday = false;
         }
 

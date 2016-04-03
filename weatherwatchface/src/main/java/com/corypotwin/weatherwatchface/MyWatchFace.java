@@ -117,9 +117,10 @@ public class MyWatchFace extends CanvasWatchFaceService {
         Integer weatherImage;
 
         private GoogleApiClient mGoogleApiClient;
-        final String TEMPHIGH_KEY = "high_temperature";
-        final String TEMPLOW_KEY = "low_temperature";
-        final String IMAGE_KEY = "image_of_weather";
+        final String PATH_TO_WEATHER_DATA = com.corypotwin.common.Utility.getWeatherDataPath(getApplicationContext());
+        final String TEMPHIGH_KEY = com.corypotwin.common.Utility.getHighTempKey(getApplicationContext());
+        final String TEMPLOW_KEY = com.corypotwin.common.Utility.getLowTempKey(getApplicationContext());
+        final String IMAGE_KEY = com.corypotwin.common.Utility.getImageKey(getApplicationContext());
 
         final BroadcastReceiver mTimeZoneReceiver = new BroadcastReceiver() {
             @Override
@@ -148,7 +149,6 @@ public class MyWatchFace extends CanvasWatchFaceService {
             super.onCreate(holder);
 
             // Initialize Watch Face
-
             setWatchFaceStyle(new WatchFaceStyle.Builder(MyWatchFace.this)
                     .setCardPeekMode(WatchFaceStyle.PEEK_MODE_VARIABLE)
                     .setBackgroundVisibility(WatchFaceStyle.BACKGROUND_VISIBILITY_INTERRUPTIVE)
@@ -158,24 +158,19 @@ public class MyWatchFace extends CanvasWatchFaceService {
             mTime = new Time();
 
             //  Connect to the Google API client for Weather data.
-
             mGoogleApiClient = new GoogleApiClient.Builder(getApplicationContext())
                     .addConnectionCallbacks(this)
                     .addOnConnectionFailedListener(this)
                     .addApi(Wearable.API)
                     .build();
-
             mGoogleApiClient.connect();
 
             //  Inflate the Watch Face XML
-
             LayoutInflater inflater =
                     (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-
-            watchFaceLayout = inflater.inflate(R.layout.watchface, null);
+            watchFaceLayout = inflater.inflate(R.layout.watch_face_layout, null);
 
             //  Setup display measurements
-
             Display display = ((WindowManager) getSystemService(Context.WINDOW_SERVICE))
                     .getDefaultDisplay();
             display.getSize(displaySize);
@@ -186,7 +181,6 @@ public class MyWatchFace extends CanvasWatchFaceService {
                     View.MeasureSpec.EXACTLY);
 
             //  Bind our Views
-
             watchFaceRelLayout = (RelativeLayout) watchFaceLayout.findViewById(R.id.watchFaceLayout);
             hoursMins = (TextView) watchFaceLayout.findViewById(R.id.hoursMinutes);
             minTemp = (TextView) watchFaceLayout.findViewById(R.id.minTemp);
@@ -202,7 +196,10 @@ public class MyWatchFace extends CanvasWatchFaceService {
         }
 
 
-        //  Take care of the data updates
+        /**
+         * when
+         * @param bundle
+         */
         @Override
         public void onConnected(Bundle bundle) {
             Wearable.DataApi.addListener(mGoogleApiClient, this);
@@ -217,7 +214,6 @@ public class MyWatchFace extends CanvasWatchFaceService {
 
         @Override
         public void onDataChanged(DataEventBuffer dataEventBuffer) {
-            Log.d(LOG_TAG, "onDataChanged: OMG IT'S EVERYTHING WE DREAMED ABOUT " + dataEventBuffer.toString());
             for (DataEvent event : dataEventBuffer) {
                 if (event.getType() == DataEvent.TYPE_CHANGED) {
                     DataItem item = event.getDataItem();
@@ -230,8 +226,7 @@ public class MyWatchFace extends CanvasWatchFaceService {
 
 
         public void setupTemperature(DataItem data){
-
-            if ("/weather_for_watch".equals(data.getUri().getPath())) {
+            if (PATH_TO_WEATHER_DATA.equals(data.getUri().getPath())) {
                 DataMap dataMap = DataMapItem.fromDataItem(data).getDataMap();
                 lowTemp = dataMap.getString(TEMPLOW_KEY);
                 highTemp = dataMap.getString(TEMPHIGH_KEY);
@@ -264,7 +259,6 @@ public class MyWatchFace extends CanvasWatchFaceService {
                 mTime.clear(TimeZone.getDefault().getID());
                 mTime.setToNow();
             } else {
-
                 releaseGoogleApiClient();
                 unregisterReceiver();
             }
@@ -363,7 +357,6 @@ public class MyWatchFace extends CanvasWatchFaceService {
 
             canvas.drawColor(Color.BLACK);
             watchFaceLayout.draw(canvas);
-
         }
 
 
