@@ -1,1 +1,1 @@
-include ':app', ':weatherwatchface', ':lib'
+include ':app', ':weatherwatchface', ':common'

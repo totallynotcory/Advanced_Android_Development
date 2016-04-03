@@ -27,6 +27,7 @@ import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -348,13 +349,14 @@ public class MyWatchFace extends CanvasWatchFaceService {
                 maxTemp.setText(highTemp);
             }
             if(weatherImage != null){
-//                tinyWeatherImage.setImageDrawable();
+                int imageResource = com.corypotwin.common.Utility.getIconResourceForWeatherCondition(weatherImage);
+                tinyWeatherImage.setImageResource(imageResource);
             }
 
             if(mAmbient){
                 watchFaceRelLayout.setBackgroundColor(getResources().getColor(R.color.black));
             } else{
-                watchFaceRelLayout.setBackgroundColor(getResources().getColor(R.color.blue));
+                watchFaceRelLayout.setBackgroundColor(getResources().getColor(R.color.primary));
             }
 
             watchFaceLayout.measure(specW, specH);
